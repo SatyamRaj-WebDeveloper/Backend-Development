@@ -7,7 +7,7 @@ cloudinary.config({
     api_secret :process.env.CLOUDINARY_API_SECRET,
 })
 
-const uploadonCloudinary = async(FilePath)=>{
+const uploadOnCloudinary = async(FilePath)=>{
     //uploading the file to the cloudinary cloud after the file is already saved on our server 
     //here --> FilePath = path of the file which is already on our server
    try{
@@ -20,7 +20,9 @@ const uploadonCloudinary = async(FilePath)=>{
    return response;
 
    }catch (error){
-     fs.unlinkSync(FilePath) //removes the file that is temporarily saved on our server if the file was not uploaded in the above if block 
+     fs.unlinkSync(FilePath)
+     return null //removes the file that is temporarily saved on our server if the file was not uploaded in the above if block 
    }
 }
 
+export {uploadOnCloudinary}

@@ -1,9 +1,9 @@
 
-//Utility Function for calling connectdb() function when and where we want 
-// here--> requesthandler will refer to connectdb() function which will allow us to connect to Database 
+//Utility Function for calling any asynchronous function when and where we want 
+//Here requesthandler can be any asynchronous function , asynchandler is a higher-order-function since it accepts another function as a parameter
 
 const asynchandler =(requesthandler)=>{
-    (req,res,next)=>{
+   return (req,res,next)=>{
         Promise.resolve(requesthandler(req,res,next)).catch((err)=>next(err))
     }
 }
