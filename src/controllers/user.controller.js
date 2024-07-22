@@ -22,7 +22,7 @@ if([fullname,username,email,password].some((item)=>{
 })){
     throw new ApiError ( 400, "All fields are required")
 }
-const existeduser = User.findOne({
+const existeduser = await User.findOne({
     $or : [{email} , {username}]
 })
 
@@ -31,7 +31,11 @@ if(existeduser){
 }
 
 const avatarlocalPath = req.files ?.avatar[0]?.path
-const coverimagelocalpath = req.files ?.coverimage[0]?.path
+// const coverimagelocalpath = req.files ?.coverimage[0]?.path
+let coverimagelocalpath ;
+if(req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0){
+    coverimagelocalpath = req.files.coverimage[0].path
+}
 console.log(req.files)
 console.log(avatarlocalPath)
 
@@ -52,7 +56,7 @@ const user = await User.create({
      coverimage : coverimage?.url || "",
      email,
      password,
-     username : username.toLowercase()
+     username : username
 })
   
  const userCreated = await User.findById(user._id).select(
@@ -63,7 +67,7 @@ const user = await User.create({
  }
 
  return res.status(201).json(
-    new ApiResponse(200,createdUser , "User registered Successfully")
+    new ApiResponse(200, userCreated , "User registered Successfully")
  )
 
 
