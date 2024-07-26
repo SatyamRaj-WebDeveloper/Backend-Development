@@ -4,7 +4,7 @@ import { upload } from '../middlewares/multr.middleware.js'
 import { loginUser } from '../controllers/user.controller.js'
 import { logoutUser } from '../controllers/user.controller.js'
 import { Verifyjwt } from '../middlewares/auth.middleware.js'
-import { verify } from 'jsonwebtoken'
+
 
 const router = Router()
 

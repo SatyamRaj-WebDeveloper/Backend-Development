@@ -430,10 +430,8 @@ const getWatchHistory = asynchandler(async(req,res)=>{
     }
     return res
     .status ( 200)
-    .json (new ApiResponse (200 , user[0].watchHistroy , "Watch History fetched Successfully "))
+    .json(new ApiResponse ( 200 , user[0] , "Watch History fetched successfully"))
 })
-
-
 
 
 
