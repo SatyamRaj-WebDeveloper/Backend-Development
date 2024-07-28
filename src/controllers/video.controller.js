@@ -38,20 +38,29 @@ const getAllVideos = asynchandler(async (req, res) => {
 
    return res
    .status(200)
-   .json(new ApiResponse(200 , totalCount ,  pageNumber , 
-    pagesize , videos,
+   .json(new ApiResponse(200 , {totalCount ,  pageNumber , 
+    pagesize , videos,},
     "Video found Successfully"
    ))
 })
 
 const publishAVideo = asynchandler(async (req, res) => {
-    const { title, Description} = req.body
+    const { title, Description } = req.body
+    
     // TODO: get video, upload to cloudinary, create video
     try {
+        const videoFile = req.files?.video[0]
+        const userId =req.user._id;
+        if(!videoFile){
+            throw new ApiError(400 , "Give a video to upload")
+        }
         if(!(title || Description)){
             throw new ApiError(400 , "Title and Description are required")
         }
-       const videoFileLocalPath = req.file?.path 
+        
+        const videoFileLocalPath = videoFile.path;
+        
+       
        if(!videoFileLocalPath){
         throw new ApiError(404 , "Video File Path not found")
        }
@@ -60,21 +69,23 @@ const publishAVideo = asynchandler(async (req, res) => {
           throw new ApiError(400 , "Could not upload ")
        }
        const newVideo = new Video({
-        title ,
+        title,
         Description,
-        videoUrl:video.url,
-        publicId : video.public_id,
-        duration : duration,
+        videoFile:video.url,
+        // publicId : video.public_id,
+        duration : video.duration,
+        owner : userId
        })
-
-       await video.save();
+         
+       await newVideo.save();
         
        return res
        .status(200)
-       .json(new ApiResponse(200 , newVideo , "Video Uploaded Successfully"))
+       .json(new ApiResponse(200 , video , "Video Uploaded Successfully"))
 
     } catch (error) {
-        throw new ApiError(400 , "No Video to upload")
+        console.log(error.message)
+        throw new ApiError(400 , "Error in Saving Video")
     }
 })
 
@@ -92,12 +103,12 @@ const getVideoById = asynchandler(async (req, res) => {
 
 const updateVideo = asynchandler(async (req, res) => {
     const { videoId } = req.params
-    const {title,description , thumbnail} = req.body
+    const {title,Description , thumbnail} = req.body
     //TODO: update video details like title, description, thumbnail
     const video = await Video.findByIdAndUpdate(videoId , {
         $set : {
-            title : title,
-            Description : description,
+            title ,
+            Description ,
             thumbnail : thumbnail,
         },
         // {
