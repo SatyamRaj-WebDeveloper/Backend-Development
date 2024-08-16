@@ -4,7 +4,7 @@ import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asynchandler} from "../utils/asynchandler.js"
-import { UploadStream } from "cloudinary"
+// import { UploadStream } from "cloudinary"
 
 const createTweet = asynchandler(async (req, res) => {
     //TODO: create tweet
@@ -18,10 +18,10 @@ const createTweet = asynchandler(async (req, res) => {
     }
 
     const Text = new tweets ({
-        Content , 
+        content: Content , 
         owner : userId,
     })
-
+    
     await Text.save();
 
      return res

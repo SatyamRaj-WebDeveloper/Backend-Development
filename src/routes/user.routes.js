@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { avatarUpdate, changeCurrentPassword, getCurrentUser, getUserChannelProfile, getWatchHistory, refreshAccessToken, registerUser, updateAccount } from '../controllers/user.controller.js'
+import { avatarUpdate, changeCurrentPassword, getCurrentUser, getUserChannelProfile, getWatchHistory, refreshAccessToken, registerUser, updateAccount,coverimageUpdate } from '../controllers/user.controller.js'
 import { upload } from '../middlewares/multr.middleware.js'
 import { loginUser } from '../controllers/user.controller.js'
 import { logoutUser } from '../controllers/user.controller.js'

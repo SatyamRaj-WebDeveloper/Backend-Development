@@ -5,6 +5,8 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asynchandler} from "../utils/asynchandler.js"
 import { populate } from "dotenv"
+import { Video } from "../models/video.model.js"
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 
 const createPlaylist = asynchandler(async (req, res) => {
@@ -36,7 +38,7 @@ const createPlaylist = asynchandler(async (req, res) => {
 
 const getUserPlaylists = asynchandler(async (req, res) => {
     //TODO: get user playlists
-    const {userId} = req.params;
+    const userId = req.user._id;
     if(!userId){
         throw new ApiError(404 , "Invalid User Id, did not get in database ");
     }
@@ -58,8 +60,8 @@ const getPlaylistById = asynchandler(async (req, res) => {
         throw new ApiError(400 , "Invalid PLaylist Id")
     }
     const playlist = await Playlist.findById(
-        {owner : userId},
-        playlistId,
+        {_id:playlistId ,owner : userId},
+        
     )
     if(!playlist){
         throw new ApiError(404 ,"No Playlist Found")
@@ -72,27 +74,62 @@ const getPlaylistById = asynchandler(async (req, res) => {
 
 const addVideoToPlaylist = asynchandler(async (req, res) => {
     //TODO : add a video to a playlist
-    const {playlistId, videoId} = req.params;
-    const {name, description} = req.body;
+    const {playlistId} = req.params;
+    const videoFile = req.files?.video[0]
+    const {title, description} = req.body;
     const userId = req.user._id;
-    if(!playlistId || !videoId){
-        throw new ApiError(401 ,"Invalid playlistId or VideoId")
-    }
-    const userplaylist = await Playlist.findById({_id:playlistId , owner:userId})
-    
-    if(!userplaylist){
-        throw new ApiError(404 , "No Playlist Found")
-    }
-     
-    if(!userplaylist.videos.includes(videoId)){
-        userplaylist.videos.push(videoId)
-    }
 
-    await userplaylist.save()
+  
+    try {
+        if(!playlistId){
+            throw new ApiError(401 ,"Invalid playlistId or VideoId")
+        }
+        
+        const videoFileLocalPath = videoFile?.path
+        
+        if(!videoFileLocalPath){
+            throw new ApiError(404 ,"No video found to add to the playlist");
+        }
     
-    return res
-    .status(200)
-    .json(new ApiResponse(200 , userplaylist , "video added Successfully"))
+        const video = await uploadOnCloudinary(videoFileLocalPath , "video")
+        
+        if(!video){
+            throw new ApiError(404 , "Video was not recieved from cloudinary")
+        }else if(!video.url){
+            throw new ApiError(404 , 'Video URL not found')
+        }
+    
+        const newVideo = await new Video({
+            videoFile : video.url,
+            title,
+            Description : description,
+            duration : video.duration,
+        
+        })
+        
+        const userplaylist = await Playlist.findByIdAndUpdate(
+            {_id:playlistId , owner:userId},
+            {$set:
+                {videos:newVideo}
+            },
+            {new:true}
+        )
+        
+        if(!userplaylist){
+            throw new ApiError(404 , "No Playlist Found")
+        }
+         console.log(userplaylist)
+        
+        
+        await userplaylist.save(newVideo)
+        
+        return res
+        .status(200)
+        .json(new ApiResponse(200 , userplaylist , "video added Successfully"))
+    } catch (error) {
+        console.log(error.message)
+        throw new ApiError(400 , "Could not complete video add to playlist")
+    }
 
 })
 
@@ -106,17 +143,17 @@ const removeVideoFromPlaylist = asynchandler(async (req, res) => {
     if(!userId){
         throw new ApiError(404 ,"User not found")
     }
-
-
     const playlist =await Playlist.findOne({_id:playlistId , owner :userId})
     if(!playlist){
         throw new ApiError(404 ,"Could not find playlist")
     }
-    const videoIndex = playlist.videos.indexOf(videoId)
-    if(videoIndex === -1){
-        throw new ApiError(404 ," Video Not found in Playlist")
-    }
-    playlist.videos.splice(videoIndex , 1)
+
+    playlist.deleteOne({
+        videos : videoId
+    })
+
+    
+    
 
     return res
     .status(200)
@@ -137,10 +174,11 @@ const deletePlaylist = asynchandler(async (req, res) => {
     const deletedPlaylist = await Playlist.findOne(
         {_id:playlistId , owner : userId},
     )
+    console.log(deletedPlaylist)
     if(!deletedPlaylist) {
         throw new ApiError(404 , "No Playlist Found with the given Playlist Id ")
     }
-    await deletedPlaylist.deleteOne();
+    await Playlist.deleteOne(deletedPlaylist);
 
     return res
     .status(200)

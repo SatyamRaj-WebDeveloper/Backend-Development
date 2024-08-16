@@ -81,7 +81,9 @@ const deleteComment = asynchandler(async (req, res) => {
     if(!(user&&videoId)){
         throw new ApiError(404 , "Invalid User or video not found")
     }
-    const comment = await Comment.findByIdAndDelete({_id : CommentToDelete , owner : user , video : videoId })
+    const comment = await Comment.findByIdAndDelete(
+        {_id : CommentToDelete , owner : user , video : videoId }  
+    )
     if(!comment){
         throw new ApiError(404 , "Comment to delete was not found")
     }

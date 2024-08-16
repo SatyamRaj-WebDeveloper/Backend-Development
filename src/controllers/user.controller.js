@@ -56,7 +56,7 @@ if(req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.leng
     coverimagelocalpath = req.files.coverimage[0].path
 }
 console.log(req.files)
-console.log(avatarlocalPath)
+// console.log(avatarlocalPath)
 
 if(!avatarlocalPath){
     throw new ApiError ( 400, "Avatar file is required")

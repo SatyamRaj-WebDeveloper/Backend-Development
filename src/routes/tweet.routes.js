@@ -1,4 +1,4 @@
-import mongoose,{Router} from "mongoose";
+import {Router} from "express";
 import {createTweet,
     getUserTweets,
     updateTweet,
